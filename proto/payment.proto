@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package payment;
+
+option py_generic_services = false;
+
+message CreatePaymentRequest {
+  string user_id  = 1;
+  string plan     = 2;   
+  string provider = 3;   
+}
+
+message CreatePaymentResponse {
+  string payment_id   = 1;
+  string provider     = 2;
+  int32  stars_amount = 3;
+}
+
+message ConfirmPaymentRequest {
+  string payment_id          = 1;
+  string provider_payment_id = 2;
+}
+
+message ConfirmPaymentResponse {
+  string status = 1;  // "ok"
+}
+
+message GetSubscriptionRequest {
+  string user_id = 1;
+}
+
+message GetSubscriptionResponse {
+  bool   found           = 1;
+  string subscription_id = 2;
+  string plan            = 3;
+  string status          = 4;
+  string expires_at      = 5;  
+  bool   is_active       = 6;
+}
+
+message CreateCryptoPaymentRequest {
+  string user_id  = 1;
+  string plan     = 2;  
+  string provider = 3;   
+}
+
+message CreateCryptoPaymentResponse {
+  string payment_id      = 1;
+  string deposit_address = 2;
+  int64  usdt_amount     = 3;  
+  string usdt_display    = 4; 
+  string expires_at      = 5;  
+}
+
+message CheckCryptoPaymentRequest {
+  string payment_id = 1;
+}
+
+message CheckCryptoPaymentResponse {
+  string status   = 1;  
+  string tx_hash  = 2;  
+}
+
+
+service PaymentService {
+  rpc CreatePayment      (CreatePaymentRequest)      returns (CreatePaymentResponse);
+  rpc ConfirmPayment     (ConfirmPaymentRequest)     returns (ConfirmPaymentResponse);
+  rpc GetSubscription    (GetSubscriptionRequest)    returns (GetSubscriptionResponse);
+  rpc CreateCryptoPayment(CreateCryptoPaymentRequest) returns (CreateCryptoPaymentResponse);
+  rpc CheckCryptoPayment (CheckCryptoPaymentRequest) returns (CheckCryptoPaymentResponse);
+}
