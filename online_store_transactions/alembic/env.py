@@ -4,16 +4,12 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from app.config import settings
-from app.infrastructure.db.base import Base
-from app.infrastructure.db import models
+from app.database import Base
+import app.models  
 
 config = context.config
 
-sync_url = (
-    settings.database_url
-    .replace("postgresql+asyncpg://", "postgresql+psycopg://")
-    .replace("postgresql+psycopg://", "postgresql+psycopg://")
-)
+sync_url = settings.database_url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
 config.set_main_option("sqlalchemy.url", sync_url)
 
 if config.config_file_name is not None:
@@ -23,9 +19,8 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=sync_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -35,10 +30,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = create_engine(
-        sync_url,
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(sync_url, poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
