@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+results/*.json
+results/*.csv
+!results/.gitkeep
+.uv/
+uv.lock

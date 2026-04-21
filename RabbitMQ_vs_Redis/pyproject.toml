@@ -1,0 +1,26 @@
+[project]
+name = "broker-bench"
+version = "0.2.0"
+description = "RabbitMQ vs Redis single-instance benchmark"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "aio-pika>=9.4.0",
+    "redis>=5.2.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "httpx>=0.27.0",
+    "tabulate>=0.9.0",
+    "rich>=13.9.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["bench"]
+
+[tool.uv]
+package = true
