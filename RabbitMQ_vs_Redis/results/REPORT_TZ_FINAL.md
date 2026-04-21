@@ -11,13 +11,10 @@
 
 ## Скриншоты Docker Desktop (Stats)
 
-Файлы лежат в `results/screens/` (можно заменить при новых прогонах).
 
 ### RabbitMQ (`bench-rabbitmq`)
 
 ![Docker Desktop — CPU/Memory/Network, контейнер bench-rabbitmq](screens/docker-desktop-bench-rabbitmq-stats.png)
-
-*Кратко для подписи в отчёте:* на скрине видны пики CPU до ~100% лимита одного ядра на фазах нагрузки, стабильная память ~136 MB / 1 GB, сетевой трафик порядка **~2 GB** за окно теста — согласуется с более «тяжёлым» профилем AMQP при тех же прогонах.
 
 ### Redis (`bench-redis`)
 
