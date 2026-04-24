@@ -87,7 +87,7 @@ class PaymentClient:
 
 
     async def create_crypto_payment(
-        self, user_id: uuid.UUID, plan: str
+        self, user_id: uuid.UUID, plan: str, provider: str = "eth"
     ) -> dict[str, Any] | None:
         try:
             response: payment_pb2.CreateCryptoPaymentResponse = (
@@ -95,7 +95,7 @@ class PaymentClient:
                     payment_pb2.CreateCryptoPaymentRequest(
                         user_id=str(user_id),
                         plan=plan,
-                        provider="eth",
+                        provider=provider,
                     )
                 )
             )

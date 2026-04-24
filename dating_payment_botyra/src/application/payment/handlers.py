@@ -1,3 +1,4 @@
+import logging
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -18,6 +19,9 @@ from src.domain.subscription.entity import Subscription
 from src.domain.subscription.service import activate_subscription
 from src.domain.subscription.value_objects import PLAN_PRICE_STARS, PLAN_PRICE_USDT
 from src.infrastructure.gateways.crypto.eth import EthUsdtGateway
+from src.infrastructure.gateways.crypto.sol import SolUsdtGateway
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -98,9 +102,15 @@ class CreateCryptoPaymentResult:
 
 
 class CreateCryptoPaymentHandler:
-    def __init__(self, uow: IUnitOfWork, eth_gateway: EthUsdtGateway) -> None:
+    def __init__(
+        self,
+        uow: IUnitOfWork,
+        eth_gateway: EthUsdtGateway,
+        sol_gateway: SolUsdtGateway,
+    ) -> None:
         self._uow = uow
         self._eth = eth_gateway
+        self._sol = sol_gateway
 
     async def handle(self, cmd: CreateCryptoPaymentCommand) -> CreateCryptoPaymentResult:
         usdt_amount = PLAN_PRICE_USDT[cmd.plan]
@@ -115,12 +125,17 @@ class CreateCryptoPaymentHandler:
             payment = Payment(
                 user_id=cmd.user_id,
                 subscription_id=subscription.id,
-                provider=Provider.ETH,
+                provider=cmd.provider,
                 amount=Money(amount=usdt_amount, currency="USDT"),
                 expires_at=expires_at,
             )
 
-            deposit_address = await self._eth.compute_deposit_address(payment.id)
+            if cmd.provider == Provider.ETH:
+                deposit_address = await self._eth.compute_deposit_address(payment.id)
+            elif cmd.provider == Provider.SOL:
+                deposit_address = await self._sol.derive_deposit_address(payment.id)
+            else:
+                raise ValueError(f"Unsupported crypto provider: {cmd.provider}")
             payment.deposit_address = deposit_address
 
             await self._uow.payments.save(payment)
@@ -147,10 +162,12 @@ class CheckCryptoPaymentHandler:
         uow: IUnitOfWork,
         event_bus: IEventBus,
         eth_gateway: EthUsdtGateway,
+        sol_gateway: SolUsdtGateway,
     ) -> None:
         self._uow = uow
         self._event_bus = event_bus
         self._eth = eth_gateway
+        self._sol = sol_gateway
 
     async def handle(self, cmd: CheckCryptoPaymentCommand) -> CheckCryptoPaymentResult:
         async with self._uow:
@@ -176,13 +193,34 @@ class CheckCryptoPaymentHandler:
                 )
                 return CheckCryptoPaymentResult(status="expired")
 
-            has_funds = await self._eth.has_sufficient_payment(
-                payment.deposit_address, payment.amount.amount
-            )
+            if payment.provider == Provider.ETH:
+                has_funds = await self._eth.has_sufficient_payment(
+                    payment.deposit_address, payment.amount.amount
+                )
+            elif payment.provider == Provider.SOL:
+                has_funds = await self._sol.has_sufficient_payment(
+                    payment.id, payment.amount.amount
+                )
+            else:
+                logger.warning("Unsupported payment provider: %s", payment.provider)
+                return CheckCryptoPaymentResult(status="failed")
             if not has_funds:
                 return CheckCryptoPaymentResult(status="pending")
 
-            tx_hash = await self._eth.deploy_and_sweep(payment.id)
+            try:
+                if payment.provider == Provider.ETH:
+                    tx_hash = await self._eth.deploy_and_sweep(payment.id)
+                elif payment.provider == Provider.SOL:
+                    tx_hash = await self._sol.sweep(payment.id)
+                else:
+                    return CheckCryptoPaymentResult(status="failed")
+            except Exception as exc:  
+                logger.warning(
+                    "deploy_and_sweep failed for payment %s (will stay pending): %s",
+                    payment.id,
+                    exc,
+                )
+                return CheckCryptoPaymentResult(status="pending")
             payment.succeed(tx_hash)
 
             subscription = await self._uow.subscriptions.get_by_id(payment.subscription_id)

@@ -1,10 +1,12 @@
 from logging.config import fileConfig
+
 from alembic import context
 from sqlalchemy import create_engine, pool
+
 from api.config import settings
 from common.db.base import Base
 
-import common.db.models  
+import common.db.models 
 
 config = context.config
 
@@ -18,6 +20,9 @@ sync_url = (
     .replace("postgresql+asyncpg://", "postgresql+psycopg://")
     .split("?")[0]
 )
+if "connect_timeout" not in sync_url:
+    sep = "&" if "?" in sync_url else "?"
+    sync_url = f"{sync_url}{sep}connect_timeout=5"
 
 
 def run_migrations_offline() -> None:

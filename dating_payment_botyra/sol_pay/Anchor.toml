@@ -1,0 +1,23 @@
+[toolchain]
+package_manager = "yarn"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+sol_pay = "BHihQurX9Cw9pPjQJaE77Wi6wMgvnMiczbeGoHHhk6uq"
+
+[programs.devnet]
+sol_pay = "BHihQurX9Cw9pPjQJaE77Wi6wMgvnMiczbeGoHHhk6uq"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+
+[scripts]
+test = "cargo test"
+
+[hooks]
+

@@ -1,0 +1,20 @@
+{
+  "projects": [
+    {
+      "name": "PaymentFactory",
+      "path": "./contracts/payment_factory.tact",
+      "output": "./build/PaymentFactory",
+      "options": {
+        "debug": false
+      }
+    },
+    {
+      "name": "DepositWallet",
+      "path": "./contracts/deposit_wallet.tact",
+      "output": "./build/DepositWallet",
+      "options": {
+        "debug": false
+      }
+    }
+  ]
+}

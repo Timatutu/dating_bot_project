@@ -87,19 +87,26 @@ class PaymentServicer(payment_pb2_grpc.PaymentServiceServicer):
         request: payment_pb2.CreateCryptoPaymentRequest,
         context: grpc.aio.ServicerContext,
     ) -> payment_pb2.CreateCryptoPaymentResponse:
-        if not container.eth_gateway.is_available:
-            await context.abort(
-                grpc.StatusCode.UNAVAILABLE, "Crypto payments are not configured"
-            )
-            return
-
         try:
+            provider = Provider(request.provider)
+            if provider == Provider.ETH and not container.eth_gateway.is_available:
+                await context.abort(
+                    grpc.StatusCode.UNAVAILABLE,
+                    "ETH payments are not configured",
+                )
+                return
+            if provider == Provider.SOL and not container.sol_gateway.is_available:
+                await context.abort(
+                    grpc.StatusCode.UNAVAILABLE,
+                    "SOL payments are not configured",
+                )
+                return
             handler = container.create_crypto_payment_handler()
             result = await handler.handle(
                 CreateCryptoPaymentCommand(
                     user_id=uuid.UUID(request.user_id),
                     plan=Plan(request.plan),
-                    provider=Provider(request.provider),
+                    provider=provider,
                 )
             )
             return payment_pb2.CreateCryptoPaymentResponse(

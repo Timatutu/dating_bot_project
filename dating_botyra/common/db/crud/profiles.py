@@ -27,6 +27,7 @@ async def create_profile(
     city: str | None = None,
     lat: float | None = None,
     lng: float | None = None,
+    photos_count: int = 0,
 ) -> Profile:
     profile = Profile(
         user_id=user_id,
@@ -37,6 +38,7 @@ async def create_profile(
         city=city,
         lat=lat,
         lng=lng,
+        photos_count=photos_count,
     )
     db.add(profile)
     rating = Rating(user_id=user_id)

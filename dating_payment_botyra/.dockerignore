@@ -1,0 +1,16 @@
+.venv
+.venv-wsl
+**/.venv*
+**/.venv-wsl
+ETH_pay
+sol_payment
+**/node_modules
+TON_pay
+**/.next
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.git
+.env
+results

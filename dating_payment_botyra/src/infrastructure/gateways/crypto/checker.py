@@ -28,14 +28,21 @@ async def crypto_payment_checker() -> None:
 
 
 async def _check_pending_payments() -> None:
-    if not container.eth_gateway.is_available:
+    providers: list[str] = []
+    if container.eth_gateway.is_available:
+        providers.append(Provider.ETH.value)
+    if container.sol_gateway.is_available:
+        providers.append(Provider.SOL.value)
+    if not providers:
         return
 
     handler = container.check_crypto_payment_handler()
 
     async with AsyncSessionLocal() as session:
         repo = PaymentRepository(session)
-        pending_payments = await repo.get_pending_by_provider(Provider.ETH.value)
+        pending_payments = []
+        for provider in providers:
+            pending_payments.extend(await repo.get_pending_by_provider(provider))
 
     if not pending_payments:
         return

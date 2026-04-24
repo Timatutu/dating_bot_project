@@ -29,4 +29,4 @@ class Payment(Entity):
     def is_expired(self) -> bool:
         if self.expires_at is None:
             return False
-        return lambda: datetime.now(timezone.utc)() > self.expires_at
+        return datetime.now(timezone.utc) > self.expires_at

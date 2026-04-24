@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
     LabeledPrice,
@@ -15,6 +16,7 @@ from bot.keyboards.profile import (
     subscription_plans_kb,
 )
 from bot.services.payment_client import PaymentClient
+from bot.services.subscription_sync import sync_subscription_from_payment
 from common.db.models.user import User
 
 router = Router()
@@ -27,7 +29,9 @@ async def subscription_info(
     message: Message,
     user: User,
     payment_client: PaymentClient,
+    state: FSMContext,
 ) -> None:
+    await state.clear()
     sub = await payment_client.get_subscription(user.id)
     if sub and sub["is_active"]:
         plan_label = "1 месяц" if sub["plan"] == "month" else "1 год"
@@ -93,6 +97,7 @@ async def successful_payment(
     confirmed = await payment_client.confirm_payment(payment_id, charge_id)
 
     if confirmed:
+        await sync_subscription_from_payment(payment_client, user.id)
         await message.answer(
             "✅ <b>Подписка активирована!</b>\n\n"
             "Теперь тебе доступны все функции lovebinto. Наслаждайся! 🎉",
@@ -110,7 +115,7 @@ async def successful_payment(
 @router.callback_query(F.data == "sub:crypto")
 async def crypto_menu(callback: CallbackQuery, user: User) -> None:
     await callback.message.edit_text(
-        "💰 <b>Оплата криптой (USDT ERC-20)</b>\n\n"
+        "💰 <b>Оплата криптой USDT</b>\n\n"
         "Выбери план:",
         reply_markup=crypto_plans_kb(),
     )
@@ -128,15 +133,24 @@ async def crypto_back(callback: CallbackQuery, user: User) -> None:
     await callback.answer()
 
 
-@router.callback_query(F.data.in_({"crypto:month", "crypto:year"}))
+@router.callback_query(
+    F.data.in_(
+        {
+            "crypto:eth:month",
+            "crypto:eth:year",
+            "crypto:sol:month",
+            "crypto:sol:year",
+        }
+    )
+)
 async def create_crypto_payment(
     callback: CallbackQuery,
     user: User,
     payment_client: PaymentClient,
 ) -> None:
-    plan = callback.data.split(":")[1]
+    _, provider, plan = callback.data.split(":")
 
-    result = await payment_client.create_crypto_payment(user.id, plan)
+    result = await payment_client.create_crypto_payment(user.id, plan, provider=provider)
     if result is None:
         await callback.message.answer("⚠️ Крипто-оплата временно недоступна. Попробуй позже.")
         await callback.answer()
@@ -147,13 +161,20 @@ async def create_crypto_payment(
     usdt_display = result["usdt_display"]
     expires_at = result["expires_at"]
 
+    if provider == "eth":
+        network_text = "Ethereum Sepolia (тест), USDT ERC-20"
+        title = "Оплата USDT (ERC-20)"
+    else:
+        network_text = "Solana Devnet (тест), USDT SPL"
+        title = "Оплата USDT (Solana SPL)"
+
     await callback.message.edit_text(
-        f"💰 <b>Оплата USDT (ERC-20)</b>\n\n"
+        f"💰 <b>{title}</b>\n\n"
         f"Отправь <b>{usdt_display} USDT</b> на адрес:\n\n"
         f"<code>{address}</code>\n\n"
         f"⏱ Время на оплату: <b>15 минут</b>\n"
-        f"⚠️ Сеть: <b>Ethereum (ERC-20)</b>\n\n"
-        f"После отправки нажми кнопку ниже для проверки.",
+        f"⚠️ Сеть: <b>{network_text}</b>\n\n"
+        "После отправки нажми кнопку ниже для проверки.",
         reply_markup=check_crypto_payment_kb(payment_id),
     )
     await callback.answer()
@@ -175,6 +196,7 @@ async def check_crypto(
     status = result["status"]
 
     if status == "succeeded":
+        await sync_subscription_from_payment(payment_client, user.id)
         tx_hash = result.get("tx_hash", "")
         await callback.message.edit_text(
             "✅ <b>Оплата получена! Подписка активирована!</b>\n\n"

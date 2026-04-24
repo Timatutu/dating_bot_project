@@ -41,6 +41,14 @@ def _uuid_to_bytes32(payment_id: uuid.UUID) -> bytes:
     return payment_id.bytes.rjust(32, b"\x00")
 
 
+def _eip1559_fees(web3: AsyncWeb3, gas_price_wei: int) -> tuple[int, int]:
+    priority = int(web3.to_wei(2, "gwei"))
+    max_fee = max(int(gas_price_wei), priority * 2)
+    if priority > max_fee:
+        priority = max_fee
+    return max_fee, priority
+
+
 class EthUsdtGateway:
     def __init__(self) -> None:
         self._web3: AsyncWeb3 | None = None
@@ -107,19 +115,49 @@ class EthUsdtGateway:
 
         salt = _uuid_to_bytes32(payment_id)
         account = self._web3.eth.account.from_key(settings.factory_owner_private_key)
+        gas_price = int(await self._web3.eth.gas_price)
+        max_fee, max_priority = _eip1559_fees(self._web3, gas_price)
+        chain_id = await self._web3.eth.chain_id
+        nonce = await self._web3.eth.get_transaction_count(account.address, "pending")
 
-        tx = await self._factory.functions.deployAndSweep(salt).build_transaction({
-            "from": account.address,
-            "nonce": await self._web3.eth.get_transaction_count(account.address),
-            "gas": 300_000,
-            "maxFeePerGas": await self._web3.eth.gas_price,
-            "maxPriorityFeePerGas": self._web3.to_wei(1, "gwei"),
-        })
+        tx_candidates = [
+            {
+                "from": account.address,
+                "chainId": chain_id,
+                "nonce": nonce,
+                "gas": 300_000,
+                "maxFeePerGas": max_fee,
+                "maxPriorityFeePerGas": max_priority,
+            },
+            {
+                "from": account.address,
+                "chainId": chain_id,
+                "nonce": nonce,
+                "gas": 300_000,
+                "gasPrice": max(gas_price, 1),
+            },
+        ]
 
-        signed = account.sign_transaction(tx)
-        tx_hash = await self._web3.eth.send_raw_transaction(signed.raw_transaction)
-        logger.info(
-            "deployAndSweep sent for payment %s, tx=%s",
-            payment_id, tx_hash.hex(),
-        )
-        return tx_hash.hex()
+        last_error: Exception | None = None
+        for idx, tx_params in enumerate(tx_candidates, start=1):
+            try:
+                tx = await self._factory.functions.deployAndSweep(salt).build_transaction(tx_params)
+                signed = account.sign_transaction(tx)
+                tx_hash = await self._web3.eth.send_raw_transaction(signed.raw_transaction)
+                logger.info(
+                    "deployAndSweep sent for payment %s, tx=%s (strategy=%s)",
+                    payment_id,
+                    tx_hash.hex(),
+                    idx,
+                )
+                return tx_hash.hex()
+            except Exception as exc:  
+                last_error = exc
+                logger.warning(
+                    "deployAndSweep strategy=%s failed for payment %s: %s",
+                    idx,
+                    payment_id,
+                    exc,
+                )
+
+        raise RuntimeError(f"deployAndSweep failed for all fee strategies: {last_error}")

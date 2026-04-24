@@ -1,0 +1,692 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; PaymentFactory_PaymentFactory.headers.fc
+;;
+;; Header files for PaymentFactory
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; $DeployOk$_store
+builder $DeployOk$_store(builder build_0, (int) v) inline;
+
+;; $DeployOk$_store_cell
+cell $DeployOk$_store_cell((int) v, builder b) inline;
+
+;; $Sweep$_store
+builder $Sweep$_store(builder build_0, (slice, slice, int) v) inline;
+
+;; $Sweep$_store_cell
+cell $Sweep$_store_cell((slice, slice, int) v, builder b) inline;
+
+;; $SweepTon$_store
+builder $SweepTon$_store(builder build_0, (slice) v) inline;
+
+;; $SweepTon$_store_cell
+cell $SweepTon$_store_cell((slice) v, builder b) inline;
+
+;; $PaymentFactory$_store
+builder $PaymentFactory$_store(builder build_0, (slice, slice, slice) v) inline;
+
+;; $PaymentFactory$_load
+(slice, ((slice, slice, slice))) $PaymentFactory$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $DepositWallet$init$_store
+builder $DepositWallet$init$_store(builder build_0, (slice, int) v) inline;
+
+;; $PaymentFactory$init$_load
+(slice, ((slice, slice, slice))) $PaymentFactory$init$_load(slice sc_0) inline;
+
+;; $PaymentFactory$_contract_init
+(slice, slice, slice) $PaymentFactory$_contract_init(slice $owner, slice $treasury, slice $usdt_master) impure inline;
+
+;; $PaymentFactory$_contract_load
+(slice, slice, slice) $PaymentFactory$_contract_load() impure inline;
+
+;; $PaymentFactory$_contract_store
+() $PaymentFactory$_contract_store((slice, slice, slice) v) impure inline;
+
+;; $Cell$_fun_asSlice
+slice $Cell$_fun_asSlice(cell $self) impure inline;
+
+;; $global_newAddress
+slice $global_newAddress(int $chain, int $hash) impure inline;
+
+;; $global_contractAddressExt
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline;
+
+;; $global_contractAddress
+slice $global_contractAddress((cell, cell) $s) impure inline;
+
+;; $DepositWallet$_init_child
+(cell, cell) $DepositWallet$_init_child(slice $factory, int $payment_id) inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $PaymentFactory$_fun_computeAddress
+((slice, slice, slice), slice) $PaymentFactory$_fun_computeAddress((slice, slice, slice) $self, int $payment_id) impure inline_ref;
+
+;; $PaymentFactory$_fun_factoryOwner
+((slice, slice, slice), slice) $PaymentFactory$_fun_factoryOwner((slice, slice, slice) $self) impure inline_ref;
+
+;; $PaymentFactory$_fun_factoryTreasury
+((slice, slice, slice), slice) $PaymentFactory$_fun_factoryTreasury((slice, slice, slice) $self) impure inline_ref;
+
+;; $PaymentFactory$_fun_usdtMaster
+((slice, slice, slice), slice) $PaymentFactory$_fun_usdtMaster((slice, slice, slice) $self) impure inline_ref;
+
+;; $PaymentFactory$_fun_notify
+((slice, slice, slice), ()) $PaymentFactory$_fun_notify((slice, slice, slice) $self, cell $body) impure inline;
+
+;; $SendParameters$_constructor_to_value_mode_bounce_code_data_body
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce_code_data_body(slice $to, int $value, int $mode, int $bounce, cell $code, cell $data, cell $body) inline;
+
+;; $Sweep$_constructor_jetton_wallet_to_amount
+((slice, slice, int)) $Sweep$_constructor_jetton_wallet_to_amount(slice $jetton_wallet, slice $to, int $amount) inline;
+
+;; $SweepTon$_constructor_to
+((slice)) $SweepTon$_constructor_to(slice $to) inline;
+
+;; $DeployOk$_constructor_queryId
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+
+
+;; PaymentFactory_PaymentFactory.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+builder $global_beginCell() impure asm """
+    NEWC
+""";
+
+int $global_contractHash(cell $code, cell $data) impure asm """
+    s0 PUSH HASHCU // `data` hash
+    s2 PUSH HASHCU // `code` hash
+    SWAP2
+    CDEPTH         // `data` depth
+    SWAP
+    CDEPTH         // `code` depth
+    131380 INT     // (2 << 16) | (1 << 8) | 0x34
+
+    // Group 2: Composition of the Builder
+    NEWC
+    24 STU  // store refs_descriptor | bits_descriptor | data
+    16 STU  // store depth_descriptor for `code`
+    16 STU  // store depth_descriptor for `data`
+    256 STU // store `code` hash
+    256 STU // store `data` hash
+
+    // Group 3: SHA256 hash of the resulting Builder
+    ONE HASHEXT_SHA256
+""";
+
+slice $Slice$_fun_asAddressUnsafe(slice $self) impure asm "NOP";
+
+slice $Cell$_fun_beginParse(cell $self) impure asm """
+    CTOS
+""";
+
+slice $Cell$_fun_asSlice(cell $self) impure inline {
+    var ($self) = $self;
+    return $Cell$_fun_beginParse($self);
+}
+
+cell $Builder$_fun_endCell(builder $self) impure asm """
+    ENDC
+""";
+
+slice $global_newAddress(int $chain, int $hash) impure inline {
+    return $Slice$_fun_asAddressUnsafe($Cell$_fun_asSlice($Builder$_fun_endCell(store_uint(store_int(store_uint($global_beginCell(), 4, 3), $chain, 8), $hash, 256))));
+}
+
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline {
+    int $hash = $global_contractHash($code, $data);
+    return $global_newAddress($chain, $hash);
+}
+
+slice $global_contractAddress((cell, cell) $s) impure inline {
+    var (($s'code, $s'data)) = $s;
+    return $global_contractAddressExt(0, $s'code, $s'data);
+}
+
+slice $global_myAddress() impure asm """
+    MYADDR
+""";
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+() $global_send((int, cell, cell, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+    STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+    // → Stack state
+    // s0: Builder
+    // s1: `data`
+    // s2: `code`
+    // s3: `body`
+    // s4: `mode`
+
+    // Group 2: Placing the Builder after code and data, then checking those for nullability
+    s2 XCHG0
+    DUP2
+    ISNULL
+    SWAP
+    ISNULL
+    AND
+    // → Stack state
+    // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+    // s1: `code`
+    // s2: `data`
+    // s3: Builder
+    // s4: `body`
+    // s5: `mode`
+
+    // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+    <{
+        DROP2 // drop `data` and `code`, since either of those is null
+        b{0} STSLICECONST
+    }> PUSHCONT
+
+    // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+    <{
+        // _ split_depth:(Maybe (## 5))
+        //   special:(Maybe TickTock)
+        //   code:(Maybe ^Cell)
+        //   data:(Maybe ^Cell)
+        //   library:(Maybe ^Cell)
+        // = StateInit;
+        ROT                // place message Builder on top
+        b{10} STSLICECONST // store Maybe = true, Either = false
+        // Start composing inlined StateInit
+        b{00} STSLICECONST // store split_depth and special first
+        STDICT             // store code
+        STDICT             // store data
+        b{0} STSLICECONST  // store library
+    }> PUSHCONT
+
+    // Group 3: IFELSE that does the branching shown above
+    IFELSE
+    // → Stack state
+    // s0: Builder
+    // s1: null or StateInit
+    // s2: `body`
+    // s3: `mode`
+
+    // Group 4: Finalizing the message
+    STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+    ENDC
+    // → Stack state
+    // s0: Cell
+    // s1: `mode`
+
+    // Group 5: Sending the message, with `mode` on top
+    SWAP
+    SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+""";
+
+((slice, slice, slice), ()) $PaymentFactory$_fun_notify((slice, slice, slice) $self, cell $body) impure inline {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = false;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'treasury, $self'usdt_master), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'treasury, $self'usdt_master), ());
+}
+
+;; PaymentFactory_PaymentFactory.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: SendParameters
+;; TLB: _ mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell value:int257 to:address bounce:bool = SendParameters
+;;
+
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce_code_data_body(slice $to, int $value, int $mode, int $bounce, cell $code, cell $data, cell $body) inline {
+    return ($mode, $body, $code, $data, $value, $to, $bounce);
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v, builder b) inline {
+    return $DeployOk$_store(b, v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: Sweep
+;; Header: 0x70aec356
+;; TLB: sweep#70aec356 jetton_wallet:address to:address amount:coins = Sweep
+;;
+
+builder $Sweep$_store(builder build_0, (slice, slice, int) v) inline {
+    var (v'jetton_wallet, v'to, v'amount) = v;
+    build_0 = store_uint(build_0, 1890501462, 32);
+    build_0 = build_0.store_slice(v'jetton_wallet);
+    build_0 = build_0.store_slice(v'to);
+    build_0 = build_0.store_varuint16(v'amount);
+    return build_0;
+}
+
+cell $Sweep$_store_cell((slice, slice, int) v, builder b) inline {
+    return $Sweep$_store(b, v).end_cell();
+}
+
+((slice, slice, int)) $Sweep$_constructor_jetton_wallet_to_amount(slice $jetton_wallet, slice $to, int $amount) inline {
+    return ($jetton_wallet, $to, $amount);
+}
+
+;;
+;; Type: SweepTon
+;; Header: 0x1381b697
+;; TLB: sweep_ton#1381b697 to:address = SweepTon
+;;
+
+builder $SweepTon$_store(builder build_0, (slice) v) inline {
+    var (v'to) = v;
+    build_0 = store_uint(build_0, 327267991, 32);
+    build_0 = build_0.store_slice(v'to);
+    return build_0;
+}
+
+cell $SweepTon$_store_cell((slice) v, builder b) inline {
+    return $SweepTon$_store(b, v).end_cell();
+}
+
+((slice)) $SweepTon$_constructor_to(slice $to) inline {
+    return ($to);
+}
+
+;;
+;; Type: DepositWallet
+;; TLB: _ factory:address payment_id:uint256 = DepositWallet
+;;
+
+builder $DepositWallet$init$_store(builder build_0, (slice, int) v) inline {
+    var (v'factory, v'payment_id) = v;
+    build_0 = build_0.store_slice(v'factory);
+    build_0 = build_0.store_int(v'payment_id, 257);
+    return build_0;
+}
+
+cell $DepositWallet$_child_get_code() impure asm """
+    B{b5ee9c7201020e0100023800022cff008e88f4a413f4bcf2c80bed53208e8130e1ed43d90102020271030404f601d072d721d200d200fa4021103450666f04f86102f862ed44d0d2000197fa40d3ff596c129bfa40810101d7005902d101e203925f03e07022d74920c21f953102d31f03de21821070aec356bae3022182101381b697bae302218210946a98b6bae30233c00002c12112b09e01c87f01ca005902cecbffc9ed54e00708090a0143bd577f6a268690000cbfd2069ffacb6094dfd20408080eb802c816880f16d9e3610c050143bc0fdf6a268690000cbfd2069ffacb6094dfd20408080eb802c816880f16d9e3610c0600022100022002f65b01fa40fa40fa00308150d7f84225c705f2f4708040706d238b082a515a10581049493309c8556082100f8a7ea55008cb1f16cb3f5004fa0212ce01206e9430cf84809201cee2f40001fa02cec9433010246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf818ae2f400c901fb00010b0c01b45b01fa40308150d7f84223c705f2f470810082708810246d50436d03c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0001c87f01ca005902cecbffc9ed540d00885b01d33f30c8018210aff90f5758cb1fcb3fc912f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca005902cecbffc9ed5400085bf2c082001a58cf8680cf8480f400f400cf81001ac87f01ca005902cecbffc9ed540000} B>boc PUSHREF
+""";
+
+(cell, cell) $DepositWallet$_init_child(slice $factory, int $payment_id) inline_ref {
+    ;; Build init code cell
+
+    ;; Contract Code: DepositWallet
+    cell init_code = $DepositWallet$_child_get_code();
+
+
+    builder b = begin_cell();
+    b = b.store_int(false, 1);
+    b = $DepositWallet$init$_store(b, ($factory, $payment_id));
+    return (init_code, b.end_cell());
+}
+
+;;
+;; Type: PaymentFactory
+;; TLB: _ owner:address treasury:address usdt_master:address = PaymentFactory
+;;
+
+builder $PaymentFactory$_store(builder build_0, (slice, slice, slice) v) inline {
+    var (v'owner, v'treasury, v'usdt_master) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_slice(v'treasury);
+    build_0 = build_0.store_slice(v'usdt_master);
+    return build_0;
+}
+
+(slice, ((slice, slice, slice))) $PaymentFactory$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'treasury = sc_0~load_msg_addr();
+    var v'usdt_master = sc_0~load_msg_addr();
+    return (sc_0, (v'owner, v'treasury, v'usdt_master));
+}
+
+(slice, ((slice, slice, slice))) $PaymentFactory$init$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'treasury = sc_0~load_msg_addr();
+    var v'usdt_master = sc_0~load_msg_addr();
+    return (sc_0, (v'owner, v'treasury, v'usdt_master));
+}
+
+(slice, slice, slice) $PaymentFactory$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$PaymentFactory$_load();
+    }
+    else {
+        (slice $owner, slice $treasury, slice $usdt_master) = $sc~$PaymentFactory$init$_load();
+        $sc.end_parse();
+        return $PaymentFactory$_contract_init($owner, $treasury, $usdt_master);
+    }
+}
+
+() $PaymentFactory$_contract_store((slice, slice, slice) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $PaymentFactory$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Contract PaymentFactory functions
+;;
+
+(slice, slice, slice) $PaymentFactory$_contract_init(slice $owner, slice $treasury, slice $usdt_master) impure inline {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = (null(), null(), null());
+    $self'owner = $owner;
+    $self'treasury = $treasury;
+    $self'usdt_master = $usdt_master;
+    return ($self'owner, $self'treasury, $self'usdt_master);
+}
+
+((slice, slice, slice), slice) $PaymentFactory$_fun_computeAddress((slice, slice, slice) $self, int $payment_id) impure inline_ref {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = $self;
+    var $fresh$ret_8 = $global_contractAddress($DepositWallet$_init_child($global_myAddress(), $payment_id));
+    return (($self'owner, $self'treasury, $self'usdt_master), $fresh$ret_8);
+}
+
+((slice, slice, slice), slice) $PaymentFactory$_fun_factoryOwner((slice, slice, slice) $self) impure inline_ref {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = $self;
+    var $fresh$ret_9 = $self'owner;
+    return (($self'owner, $self'treasury, $self'usdt_master), $fresh$ret_9);
+}
+
+((slice, slice, slice), slice) $PaymentFactory$_fun_factoryTreasury((slice, slice, slice) $self) impure inline_ref {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = $self;
+    var $fresh$ret_10 = $self'treasury;
+    return (($self'owner, $self'treasury, $self'usdt_master), $fresh$ret_10);
+}
+
+((slice, slice, slice), slice) $PaymentFactory$_fun_usdtMaster((slice, slice, slice) $self) impure inline_ref {
+    var (($self'owner, $self'treasury, $self'usdt_master)) = $self;
+    var $fresh$ret_11 = $self'usdt_master;
+    return (($self'owner, $self'treasury, $self'usdt_master), $fresh$ret_11);
+}
+
+;;
+;; Get methods of a Contract PaymentFactory
+;;
+
+_ %computeAddress(int $payment_id) method_id(73495) {
+    int $payment_id = $payment_id;
+    var self = $PaymentFactory$_contract_load();
+    var res = self~$PaymentFactory$_fun_computeAddress($payment_id);
+    return res;
+}
+
+_ %factoryOwner() method_id(111611) {
+    var self = $PaymentFactory$_contract_load();
+    var res = self~$PaymentFactory$_fun_factoryOwner();
+    return res;
+}
+
+_ %factoryTreasury() method_id(95301) {
+    var self = $PaymentFactory$_contract_load();
+    var res = self~$PaymentFactory$_fun_factoryTreasury();
+    return res;
+}
+
+_ %usdtMaster() method_id(113833) {
+    var self = $PaymentFactory$_contract_load();
+    var res = self~$PaymentFactory$_fun_usdtMaster();
+    return res;
+}
+
+;;
+;; Routing of a Contract PaymentFactory
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'treasury, $self'usdt_master) = $PaymentFactory$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    var op = in_msg~load_opcode_internal();
+    ;; Receive DeployAndSweep message
+    if (op == 774468011) {
+        var $msg'payment_id = in_msg~load_uint(256);
+        var $msg'jetton_wallet = in_msg~load_msg_addr();
+        var $msg'amount = in_msg~load_varuint16();
+        throw_unless(44952, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        var ($init'code, $init'data) = $DepositWallet$_init_child($global_myAddress(), $msg'payment_id);
+        slice $wallet = $global_contractAddress(($init'code, $init'data));
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_code_data_body($wallet, 0, 64, false, $init'code, $init'data, $Sweep$_store_cell($Sweep$_constructor_jetton_wallet_to_amount($msg'jetton_wallet, $self'treasury, $msg'amount), begin_cell())));
+        $PaymentFactory$_contract_store(($self'owner, $self'treasury, $self'usdt_master));
+        return ();
+    }
+    
+    ;; Receive DeployAndSweepTon message
+    if (op == 3685897264) {
+        var $msg'payment_id = in_msg~load_uint(256);
+        throw_unless(44952, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        var ($init'code, $init'data) = $DepositWallet$_init_child($global_myAddress(), $msg'payment_id);
+        slice $wallet = $global_contractAddress(($init'code, $init'data));
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_code_data_body($wallet, 0, 64, false, $init'code, $init'data, $SweepTon$_store_cell($SweepTon$_constructor_to($self'treasury), begin_cell())));
+        $PaymentFactory$_contract_store(($self'owner, $self'treasury, $self'usdt_master));
+        return ();
+    }
+    
+    ;; Receive SetTreasury message
+    if (op == 241953983) {
+        var $msg'new_treasury = in_msg~load_msg_addr();
+        throw_unless(44952, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        $self'treasury = $msg'new_treasury;
+        $PaymentFactory$_contract_store(($self'owner, $self'treasury, $self'usdt_master));
+        return ();
+    }
+    
+    ;; Receive TransferOwnership message
+    if (op == 2636691758) {
+        var $msg'new_owner = in_msg~load_msg_addr();
+        throw_unless(44952, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        $self'owner = $msg'new_owner;
+        $PaymentFactory$_contract_store(($self'owner, $self'treasury, $self'usdt_master));
+        return ();
+    }
+    
+    ;; Receive Deploy message
+    if (op == 0x946a98b6) {
+        var $deploy'queryId = in_msg~load_uint(64);
+        ($self'owner, $self'treasury, $self'usdt_master)~$PaymentFactory$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        $PaymentFactory$_contract_store(($self'owner, $self'treasury, $self'usdt_master));
+        return ();
+    }
+    
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

@@ -9,6 +9,7 @@ class Provider(str, Enum):
     YOOKASSA = "yookassa"
     TON = "ton"
     ETH = "eth"
+    SOL = "sol"
 
 
 class PaymentStatus(str, Enum):

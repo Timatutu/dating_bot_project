@@ -57,8 +57,10 @@ def subscription_plans_kb() -> InlineKeyboardMarkup:
 
 def crypto_plans_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="1 месяц — 5 USDT", callback_data="crypto:month")],
-        [InlineKeyboardButton(text="1 год — 40 USDT", callback_data="crypto:year")],
+        [InlineKeyboardButton(text="1 месяц — 5 USDT (ETH)", callback_data="crypto:eth:month")],
+        [InlineKeyboardButton(text="1 год — 40 USDT (ETH)", callback_data="crypto:eth:year")],
+        [InlineKeyboardButton(text="1 месяц — 5 USDT (SOL)", callback_data="crypto:sol:month")],
+        [InlineKeyboardButton(text="1 год — 40 USDT (SOL)", callback_data="crypto:sol:year")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="crypto:back")],
     ])
 

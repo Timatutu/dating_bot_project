@@ -36,7 +36,10 @@ class ProfileCreate(StatesGroup):
 
 
 @router.message(F.text == "👤 Моя анкета")
-async def my_profile(message: Message, user: User, db: AsyncSession) -> None:
+async def my_profile(
+    message: Message, user: User, db: AsyncSession, state: FSMContext
+) -> None:
+    await state.clear()
     profile = await get_profile_by_user_id(db, user.id)
 
     if profile is None:
