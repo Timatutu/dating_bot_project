@@ -1,0 +1,48 @@
+[12:13:24] Starting cache comparison: 3 strategies, 3 workloads, 1 RPS levels
+[12:13:24] http://app-cache-aside:8000: health ok (strategy=cache_aside, cache=redis)
+[12:13:24] cache_aside / rps-550 / read-heavy: reset database and cache
+[12:13:24] cache_aside / rps-550 / read-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:13:41] cache_aside / rps-550 / read-heavy: throughput=357.2 req/sec, avg_latency=199.57 ms, db_accesses=2739, cache_hit_rate=0.7335, errors=0
+[12:13:41] cache_aside / rps-550 / balanced: reset database and cache
+[12:13:42] cache_aside / rps-550 / balanced: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:14:05] cache_aside / rps-550 / balanced: throughput=260.88 req/sec, avg_latency=273.84 ms, db_accesses=5090, cache_hit_rate=0.4513, errors=0
+[12:14:05] cache_aside / rps-550 / write-heavy: reset database and cache
+[12:14:05] cache_aside / rps-550 / write-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:14:32] cache_aside / rps-550 / write-heavy: throughput=229.07 req/sec, avg_latency=312.32 ms, db_accesses=6340, cache_hit_rate=0.1962, errors=0
+[12:14:33] http://app-write-through:8000: health ok (strategy=write_through, cache=redis)
+[12:14:33] write_through / rps-550 / read-heavy: reset database and cache
+[12:14:33] write_through / rps-550 / read-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:14:47] write_through / rps-550 / read-heavy: throughput=472.09 req/sec, avg_latency=150.92 ms, db_accesses=1610, cache_hit_rate=0.9479, errors=0
+[12:14:47] write_through / rps-550 / balanced: reset database and cache
+[12:14:47] write_through / rps-550 / balanced: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:15:05] write_through / rps-550 / balanced: throughput=332.7 req/sec, avg_latency=214.58 ms, db_accesses=3410, cache_hit_rate=0.9534, errors=0
+[12:15:05] write_through / rps-550 / write-heavy: reset database and cache
+[12:15:05] write_through / rps-550 / write-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:15:30] write_through / rps-550 / write-heavy: throughput=250.79 req/sec, avg_latency=284.78 ms, db_accesses=5336, cache_hit_rate=0.954, errors=0
+[12:15:30] http://app-write-back:8000: health ok (strategy=write_back, cache=redis)
+[12:15:30] write_back / rps-550 / read-heavy: reset database and cache
+[12:15:30] write_back / rps-550 / read-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:15:45] write_back / rps-550 / read-heavy: throughput=460.41 req/sec, avg_latency=154.77 ms, db_accesses=529, cache_hit_rate=0.9483, errors=0
+[12:15:45] write_back / rps-550 / read-heavy: pending_before_flush=51, pending_max=72, manual_flush=51
+[12:15:45] write_back / rps-550 / balanced: reset database and cache
+[12:15:45] write_back / rps-550 / balanced: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:16:23] write_back / rps-550 / balanced: throughput=163.44 req/sec, avg_latency=435.66 ms, db_accesses=776, cache_hit_rate=0.9534, errors=0
+[12:16:23] write_back / rps-550 / balanced: pending_before_flush=57, pending_max=93, manual_flush=57
+[12:16:23] write_back / rps-550 / write-heavy: reset database and cache
+[12:16:23] write_back / rps-550 / write-heavy: load started (target_rps=550.0, requests=6600, concurrency=72)
+[12:16:54] write_back / rps-550 / write-heavy: throughput=207.32 req/sec, avg_latency=343.21 ms, db_accesses=668, cache_hit_rate=0.9517, errors=0
+[12:16:54] write_back / rps-550 / write-heavy: pending_before_flush=56, pending_max=104, manual_flush=56
+[12:16:54] 
+[12:16:54] RESULT TABLE
+[12:16:54] strategy      | load    | target_rps | workload    | req/sec | avg_ms | p95_ms  | db_accesses | cache_hit_rate | wb_pending_max | errors
+[12:16:54] --------------+---------+------------+-------------+---------+--------+---------+-------------+----------------+----------------+-------
+[12:16:54] cache_aside   | rps-550 | 550.0      | read-heavy  | 357.2   | 199.57 | 266.14  | 2739        | 0.7335         | 0              | 0     
+[12:16:54] cache_aside   | rps-550 | 550.0      | balanced    | 260.88  | 273.84 | 332.88  | 5090        | 0.4513         | 0              | 0     
+[12:16:54] cache_aside   | rps-550 | 550.0      | write-heavy | 229.07  | 312.32 | 372.33  | 6340        | 0.1962         | 0              | 0     
+[12:16:54] write_through | rps-550 | 550.0      | read-heavy  | 472.09  | 150.92 | 188.05  | 1610        | 0.9479         | 0              | 0     
+[12:16:54] write_through | rps-550 | 550.0      | balanced    | 332.7   | 214.58 | 275.81  | 3410        | 0.9534         | 0              | 0     
+[12:16:54] write_through | rps-550 | 550.0      | write-heavy | 250.79  | 284.78 | 345.52  | 5336        | 0.954          | 0              | 0     
+[12:16:54] write_back    | rps-550 | 550.0      | read-heavy  | 460.41  | 154.77 | 429.89  | 529         | 0.9483         | 72             | 0     
+[12:16:54] write_back    | rps-550 | 550.0      | balanced    | 163.44  | 435.66 | 1726.4  | 776         | 0.9534         | 93             | 0     
+[12:16:54] write_back    | rps-550 | 550.0      | write-heavy | 207.32  | 343.21 | 1475.44 | 668         | 0.9517         | 104            | 0     
+[12:16:54] Results saved to /app/results

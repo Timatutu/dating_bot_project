@@ -1,0 +1,15 @@
+[project]
+name = "cache-strategy-comparison"
+version = "0.1.0"
+description = "FastAPI practice project comparing cache-aside, write-through and write-back caching strategies."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.30,<1.0",
+    "psycopg[binary]>=3.2,<4.0",
+]
+
+[tool.uv]
+package = false
+

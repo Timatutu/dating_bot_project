@@ -1,0 +1,119 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-cache_practice}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cache-practice-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cache_practice}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app-cache-aside:
+    build: .
+    environment:
+      CACHE_STRATEGY: cache_aside
+      CACHE_PREFIX: cache_aside
+      REDIS_HOST: redis
+      REDIS_DB: 0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-cache_practice}
+      DB_SCHEMA: cache_aside
+      STARTUP_SEED_SIZE: ${STARTUP_SEED_SIZE:-1000}
+    ports:
+      - "${APP_PORT_CACHE_ASIDE:-8001}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  app-write-through:
+    build: .
+    environment:
+      CACHE_STRATEGY: write_through
+      CACHE_PREFIX: write_through
+      REDIS_HOST: redis
+      REDIS_DB: 1
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-cache_practice}
+      DB_SCHEMA: write_through
+      STARTUP_SEED_SIZE: ${STARTUP_SEED_SIZE:-1000}
+    ports:
+      - "${APP_PORT_WRITE_THROUGH:-8002}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  app-write-back:
+    build: .
+    environment:
+      CACHE_STRATEGY: write_back
+      CACHE_PREFIX: write_back
+      REDIS_HOST: redis
+      REDIS_DB: 2
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-cache_practice}
+      DB_SCHEMA: write_back
+      WRITE_BACK_FLUSH_INTERVAL: ${WRITE_BACK_FLUSH_INTERVAL:-3}
+      WRITE_BACK_BATCH_SIZE: ${WRITE_BACK_BATCH_SIZE:-100}
+      STARTUP_SEED_SIZE: ${STARTUP_SEED_SIZE:-1000}
+    ports:
+      - "${APP_PORT_WRITE_BACK:-8003}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  bench:
+    build: .
+    command:
+      - uv
+      - run
+      - python
+      - load_generator.py
+      - --target
+      - cache_aside=http://app-cache-aside:8000
+      - --target
+      - write_through=http://app-write-through:8000
+      - --target
+      - write_back=http://app-write-back:8000
+      - --requests
+      - "${BENCH_REQUESTS:-1200}"
+      - --duration
+      - "${BENCH_DURATION:-12}"
+      - --concurrency
+      - "${BENCH_CONCURRENCY:-32}"
+      - --dataset-size
+      - "${BENCH_DATASET_SIZE:-1000}"
+      - --hot-set-size
+      - "${BENCH_HOT_SET_SIZE:-100}"
+      - --hot-key-ratio
+      - "${BENCH_HOT_KEY_RATIO:-0.85}"
+      - --output-dir
+      - /app/results
+    volumes:
+      - ./results:/app/results
+    depends_on:
+      - app-cache-aside
+      - app-write-through
+      - app-write-back
+
+volumes:
+  cache-practice-postgres:
